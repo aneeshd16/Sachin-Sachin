@@ -80,5 +80,11 @@
     "webdriver-update": "./node_modules/.bin/webdriver-manager update",
     "postinstall": "npm run webdriver-update"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "angular-chart.js": "^0.8.8",
+    "angularfire": "^1.1.3",
+    "firebase": "^2.3.2",
+    "path": "^0.12.7"
+  }
 }

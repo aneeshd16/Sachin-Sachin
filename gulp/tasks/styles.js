@@ -9,7 +9,7 @@ import handleErrors from '../util/handleErrors';
 import browserSync  from 'browser-sync';
 import autoprefixer from 'gulp-autoprefixer';
 
-gulp.task('styles', function () {
+gulp.task('styles', ['cssStyles'], function () {
 
   const createSourcemap = !global.isProd || config.styles.prodSourcemap;
 
@@ -18,7 +18,8 @@ gulp.task('styles', function () {
     .pipe(sass({
       sourceComments: !global.isProd,
       outputStyle: global.isProd ? 'compressed' : 'nested',
-      includePaths: config.styles.sassIncludePaths
+      includePaths: config.styles.sassIncludePaths,
+      errLogToConsole: true
     }))
     .on('error', handleErrors)
     .pipe(autoprefixer('last 2 versions', '> 1%', 'ie 8'))

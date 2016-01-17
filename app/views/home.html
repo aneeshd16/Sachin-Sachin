@@ -1,7 +1,10 @@
-<h1 class="heading -large">{{ home.title | ExampleFilter }}</h1>
+<h1 ng-if="home.data.yes>=0" class="heading -large center-align">Do you think Sachin Tendulkar is the greatest cricketer of all time?</h1>
+<p class="center-align" ng-hide="home.data.yes>=0">Loading...</p>
+<div ng-if="home.data.yes>=0" class="top-space center-align">
+    <button ng-click="home.btnClicked(1)" class="btn-home-page btn btn-lg btn-primary">YES</button>
+    <button ng-click="home.btnClicked(0)" class="btn-home-page btn btn-lg btn-danger">NO</button>
+</div>
+<p class="row"> 
+	<div ng-if="home.data.yes>=0" class="col-xs-12 top-space center-align well"><i>Greatness is an acquisition of status by the people who have contributed to an organization, group, or purpose that is greater than themselves. It is defined by the deeds of people that make this world a better place. To provide a purpose to those who have no purpose, and to sustain it, mitigate it from damage, and praise it in any way they can, while still maintaining their own dignity and greatness.</i></div>
 
-<h3 class="heading -medium">Here is a fancy number served up courtesy of Angular: <span class="number-example">{{ home.number }}</span></h3>
-
-<img src="images/angular.png" height="100" example-directive />
-<img src="images/gulp.png" height="100" />
-<img src="images/browserify.png" height="100" />
+</p>

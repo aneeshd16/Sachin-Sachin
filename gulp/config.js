@@ -15,6 +15,11 @@ export default {
     sassIncludePaths: []
   },
 
+  cssStyles: {
+    src: 'app/styles/**/*.css',
+    dest: 'build/css'
+  },
+
   scripts: {
     src: 'app/js/**/*.js',
     dest: 'build/js'
