@@ -15,6 +15,12 @@ function OnConfig($stateProvider, $locationProvider, $urlRouterProvider) {
     controller: 'ResultCtrl as result',
     templateUrl: 'result.html',
     title: 'Result'
+  })
+  .state('Stats', {
+    url: '/stats',
+    controller: 'StatsCtrl as stats',
+    templateUrl: 'stats.html',
+    title: 'Stats'
   });
 
   $urlRouterProvider.otherwise('/');

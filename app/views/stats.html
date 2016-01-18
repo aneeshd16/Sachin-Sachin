@@ -1,0 +1,16 @@
+<div class="row">
+    <p class="col-xs-12">View Sachin's batting average in matches that India won against</p>
+    <p class="col-xs-12">
+    <select class="col-xs-4" name="repeatSelect" id="repeatSelect" ng-model="stats.selectedCountry" ng-change="stats.updateChart()">
+        <option ng-repeat="country in stats.countries track by country" value="{{country}}">{{country}}</option>
+    </select>
+    </p>
+    <div class="col-xs-12 col-md-8">
+        <canvas id="bar" class="chart chart-bar" chart-data="stats.data" chart-labels="stats.labels">
+        </canvas>
+    </div>
+    <div class="col-md-4 col-xs-12">
+    	
+    </div>
+</div>
+<pre>{{ stats.json | json}}</pre>
