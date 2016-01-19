@@ -1,10 +1,12 @@
 var fs = require('fs');
 
-var obj = JSON.parse(fs.readFileSync('sachin.json', 'utf8'));
+var odis = JSON.parse(fs.readFileSync('sachinODI.json', 'utf8'));
+var tests = JSON.parse(fs.readFileSync('sachinTest.json', 'utf8'));
 const AppSettings = {
   appTitle: 'Sachin Sachin!',
   apiUrl: '/api/v1',
-  sachinData: obj
+  sachinODIData: odis,
+  sachinTestData: tests
 };
 
 export default AppSettings;
