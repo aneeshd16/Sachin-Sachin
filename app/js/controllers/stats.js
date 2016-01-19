@@ -12,12 +12,12 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
     vm.data = [];
     vm.data.push([]);
     vm.labels = [];
-    var query = $filter('filter')(AppSettings.sachinData, {
+    var winningQuery = $filter('filter')(AppSettings.sachinData, {
       match_result: 'won',
       opposition: vm.selectedCountry
     });
 
-    var grounds = {};
+    var winningGrounds = {};
 
     var clean = function(value) {
       return parseInt(value);
@@ -25,18 +25,18 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
     var curr;
     var highest = -1;
     var highestGround;
-    for (curr in query) {
-      if (clean(query[curr].batting_score) >= 0) {
-        if (!(query[curr].ground in grounds)) {
-          grounds[query[curr].ground] = {};
-          grounds[query[curr].ground]['average'] = clean(query[curr].batting_score);
-          grounds[query[curr].ground]['matches'] = 1;
+    for (curr in winningQuery) {
+      if (clean(winningQuery[curr].batting_score) >= 0) {
+        if (!(winningQuery[curr].ground in winningGrounds)) {
+          winningGrounds[winningQuery[curr].ground] = {};
+          winningGrounds[winningQuery[curr].ground]['average'] = clean(winningQuery[curr].batting_score);
+          winningGrounds[winningQuery[curr].ground]['matches'] = 1;
         } else {
-          grounds[query[curr].ground]['average'] = ((grounds[query[curr].ground]['average'] * grounds[query[curr].ground]['matches']) + clean(query[curr].batting_score)) / (++grounds[query[curr].ground]['matches']);
+          winningGrounds[winningQuery[curr].ground]['average'] = ((winningGrounds[winningQuery[curr].ground]['average'] * winningGrounds[winningQuery[curr].ground]['matches']) + clean(winningQuery[curr].batting_score)) / (++winningGrounds[winningQuery[curr].ground]['matches']);
         }
-        if (highest < clean(query[curr].batting_score)) {
-          highest = clean(query[curr].batting_score);
-          highestGround = query[curr].ground;
+        if (highest < clean(winningQuery[curr].batting_score)) {
+          highest = clean(winningQuery[curr].batting_score);
+          highestGround = winningQuery[curr].ground;
         }
       }
     }
@@ -46,10 +46,10 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
     var labels = [];
     var totalAverage = 0;
 
-    for (var ground in grounds) {
-      if (grounds.hasOwnProperty(ground)) {
-        vm.data[0].push(grounds[ground].average);
-        totalAverage += grounds[ground].average;
+    for (var ground in winningGrounds) {
+      if (winningGrounds.hasOwnProperty(ground)) {
+        vm.data[0].push(winningGrounds[ground].average);
+        totalAverage += winningGrounds[ground].average;
         labels.push(ground);
       }
     }
@@ -57,8 +57,27 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
     vm.totalAverage = totalAverage / labels.length;
     vm.labels = labels;
 
-    vm.json = grounds;
+    var losingQuery = $filter('filter')(AppSettings.sachinData, function(element) {
+      if((element.batting_score >= 50) && (element.opposition === vm.selectedCountry))
+        return true;
+    });
+
+    vm.pieLabels = ['WON','DID NOT WIN'];
+    vm.pieData = [];
+    var winCount = 0, loseCount = 0;
+    losingQuery.reduce(function(prev, curr){
+      if(curr.match_result === 'won')
+        winCount++;
+      else
+        loseCount++;
+    });
+
+    vm.pieData = [winCount, loseCount];
+
+    vm.json = losingQuery;
   }
+
+
 
   vm.countries = [];
   AppSettings.sachinData.sort(function(a, b) {
@@ -72,9 +91,11 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
   vm.data = [];
   vm.data.push([]);
   vm.labels = [];
+  vm.pieData = [];
+  vm.pieLabels = [];
   vm.totalAverage = 0;
   vm.updateChart();
-
+  //vm.updatePie();
 
 }
 
