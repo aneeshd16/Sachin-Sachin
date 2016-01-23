@@ -10,36 +10,49 @@
         </select>
     </div>
 </div>
-<div class="row">
-    <div class="col-xs-12 col-md-6">
-        <canvas id="bar" class="chart chart-bar" chart-data="stats.data" chart-labels="stats.labels">
-        </canvas>
+<div class="row center-align" ng-hide="stats.showStats">
+    <div class="col-xs-12">
+        <h2>{{stats.selectedCountry}} is not a Test playing nation.</h2>
     </div>
-    <div class="col-md-6 col-xs-12">
-        <div class="row">
-            <div class="col-md-8 col-xs-12">
-                <canvas id="pie" class="chart chart-pie" chart-legend="true" chart-data="stats.pieData" chart-labels="stats.pieLabels">
-                </canvas>
-            </div>
-            <div class="col-md-4 col-xs-12">
-                <div class="center-align col-md-12 col-xs-6">
-                    <div class="circle-highlight">{{stats.totalAverage | number:0}}</div>
-                    <h2 class="heading -medium center-align">TOTAL AVERAGE</h2>
+</div>
+<div ng-show="stats.showStats">
+    <div class="row">
+        <div class="col-xs-12 col-md-6">
+            <canvas id="bar" class="chart chart-bar" chart-data="stats.data" chart-labels="stats.labels">
+            </canvas>
+        </div>
+        <div class="col-md-6 col-xs-12">
+            <div class="row">
+                <div class="col-md-8 col-xs-12">
+                    <canvas ng-if="stats.showPie" id="pie" class="chart chart-pie" chart-legend="true" chart-data="stats.pieData" chart-labels="stats.pieLabels">
+                    </canvas>
+                    <div class="center-align" ng-if="!stats.showPie">
+                        <h1>No Data</h1>
+                    </div>
                 </div>
-                <div class="center-align col-md-12 col-xs-6">
-                    <div class="circle-highlight">{{stats.highest}}</div>
-                    <h2 class="heading -medium center-align">HIGHEST AT {{ stats.highestGround | uppercase }}</h2>
+                <div class="col-md-4 col-xs-12">
+                    <div class="center-align col-md-12 col-xs-6">
+                        <div class="circle-highlight">{{stats.totalAverage | number:0}}</div>
+                        <h2 class="heading -medium center-align">TOTAL AVERAGE</h2>
+                    </div>
+                    <div class="center-align col-md-12 col-xs-6">
+                        <div class="circle-highlight">{{stats.highest}}</div>
+                        <h2 class="heading -medium center-align">HIGHEST AT {{ stats.highestGround | uppercase }}</h2>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<div class="row">
-    <div class="col-xs-12 col-md-6">
-        <p class="heading-medium center-align">Sachin's batting average in matches that India won</p>
+    <div class="row">
+        <div class="col-xs-12 col-md-6">
+            <p class="heading-medium center-align">Sachin's batting average in matches that India won</p>
+        </div>
+        <div class="col-md-6 col-xs-12">
+            <p class="heading-medium ">Number of matches in which Sachin scored more than {{ stats.goodScore }}</p>
+        </div>
     </div>
-    <div class="col-md-6 col-xs-12">
-        <p class="heading-medium ">Number of matches won in which Sachin scored more than 50</p>
-    </div>
 </div>
-<pre>{{ stats.json | json}}</pre>
+<div class="row center-align">
+    <h2 class="heading -medium">Sachin's average is high when India wins. Conversely, India wins more often if Sachins makes a high score.</h2>
+    <div class="heading -large">Thus proved.</div>
+</div>

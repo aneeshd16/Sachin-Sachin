@@ -6,28 +6,46 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
   'ngInject';
   // ViewModel
   const vm = this;
-  var ODIqueryCache = {};
+  var queryCache = {};
+  queryCache['ODIs'] = {};
+  queryCache['Tests'] = {};
+  vm.showStats = true;
   /*Update the batting averages chart*/
   vm.updateChart = function() {
+    var searchSpace;
+    vm.showStats = true;
+    if (vm.selectedFormat === 'Tests') {
+      if (vm.testCountries.indexOf(vm.selectedCountry) == -1) {
+        vm.showStats = false;
+        return;
+      }
+    }
+
+    vm.goodScore = (vm.selectedFormat === 'ODIs' ? AppSettings.goodODIScore : AppSettings.goodTestScore);
+    if (vm.selectedFormat === 'ODIs') {
+      searchSpace = AppSettings.sachinODIData;
+    } else {
+      searchSpace = AppSettings.sachinTestData;
+    }
     vm.data = [];
     vm.data.push([]);
     vm.labels = [];
-    if (vm.selectedCountry in ODIqueryCache) {
+
+    if (vm.selectedCountry in queryCache[vm.selectedFormat]) {
       //load from cache
-      console.log('cache load');
-      for(var prop in ODIqueryCache[vm.selectedCountry]) {
-        if (ODIqueryCache[vm.selectedCountry].hasOwnProperty(prop)) {
-          vm[prop] = ODIqueryCache[vm.selectedCountry][prop];
+      for (var prop in queryCache[vm.selectedFormat][vm.selectedCountry]) {
+        if (queryCache[vm.selectedFormat][vm.selectedCountry].hasOwnProperty(prop)) {
+          vm[prop] = queryCache[vm.selectedFormat][vm.selectedCountry][prop];
         }
       }
     } else {
       var winningQuery;
       if (vm.selectedCountry === 'The World') {
-        var winningQuery = $filter('filter')(AppSettings.sachinODIData, {
+        var winningQuery = $filter('filter')(searchSpace, {
           match_result: 'won'
         });
       } else {
-        var winningQuery = $filter('filter')(AppSettings.sachinODIData, {
+        var winningQuery = $filter('filter')(searchSpace, {
           match_result: 'won',
           opposition: vm.selectedCountry
         });
@@ -48,7 +66,11 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
             winningGrounds[winningQuery[curr].ground]['average'] = clean(winningQuery[curr].batting_score);
             winningGrounds[winningQuery[curr].ground]['matches'] = 1;
           } else {
-            winningGrounds[winningQuery[curr].ground]['average'] = ((winningGrounds[winningQuery[curr].ground]['average'] * winningGrounds[winningQuery[curr].ground]['matches']) + clean(winningQuery[curr].batting_score)) / (++winningGrounds[winningQuery[curr].ground]['matches']);
+            winningGrounds[winningQuery[curr].ground]['average'] = ((winningGrounds[winningQuery[curr].ground]['average'] * winningGrounds[winningQuery[curr].ground]['matches']) + clean(winningQuery[curr].batting_score))
+            if (winningQuery[curr].batting_score[winningQuery[curr].batting_score.length - 1] != '*') {
+              (++winningGrounds[winningQuery[curr].ground]['matches']);
+            }
+            winningGrounds[winningQuery[curr].ground]['average'] /= winningGrounds[winningQuery[curr].ground]['matches'];
           }
           if (highest < clean(winningQuery[curr].batting_score)) {
             highest = clean(winningQuery[curr].batting_score);
@@ -74,58 +96,85 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
         }
       }
 
-      vm.totalAverage = totalAverage / labels.length;
+      var divider = labels.length;
+      if (vm.selectedFormat === 'Tests')
+        divider *= 2;
+      vm.totalAverage = totalAverage / divider;
       vm.labels = labels;
+
       var losingQuery;
+
       if (vm.selectedCountry === 'The World') {
-        var losingQuery = $filter('filter')(AppSettings.sachinODIData, function(element) {
-          if ((element.batting_score >= 50))
+        losingQuery = $filter('filter')(searchSpace, function(element) {
+          if ((element.batting_score >= vm.goodScore))
             return true;
         });
       } else {
-        var losingQuery = $filter('filter')(AppSettings.sachinODIData, function(element) {
-          if ((element.batting_score >= 50) && (element.opposition === vm.selectedCountry))
+        losingQuery = $filter('filter')(searchSpace, function(element) {
+          if ((element.batting_score >= vm.goodScore) && (element.opposition === vm.selectedCountry)){
             return true;
+          }
         });
       }
-      vm.pieLabels = ['WON', 'DID NOT WIN'];
-      vm.pieData = [];
-      var winCount = 0,
-        loseCount = 0;
-      losingQuery.reduce(function(prev, curr) {
-        if (curr.match_result === 'won')
-          winCount++;
-        else
-          loseCount++;
-      });
+      if (losingQuery.length <= 1) {
+        console.log("dgfbh");
+        vm.pieData = [];
+        vm.pieLabels = [];
+        vm.showPie = false;
+        return null;
+      }
+      else {
+        vm.showPie = true;
+        vm.pieLabels = ['WON', 'LOST'];
+        vm.pieData = [];
+        var winCount = 0,
+          loseCount = 0;
+        losingQuery.reduce(function(prev, curr) {
+          if (curr.match_result === 'won')
+            winCount++;
+          else if (curr.match_result === 'lost')
+            loseCount++;
+        });
 
-      vm.pieData = [winCount, loseCount];
+        vm.pieData = [winCount, loseCount];
+      }
+      
 
-      vm.json = losingQuery;
+      vm.json = winningQuery;
 
       //add data to cache
-      ODIqueryCache[vm.selectedCountry] = {};
-      ODIqueryCache[vm.selectedCountry].highest = vm.highest;
-      ODIqueryCache[vm.selectedCountry].highestGround = vm.highestGround;
-      ODIqueryCache[vm.selectedCountry].data = vm.data;
-      ODIqueryCache[vm.selectedCountry].labels = vm.labels;
-      ODIqueryCache[vm.selectedCountry].totalAverage = vm.totalAverage;
-      ODIqueryCache[vm.selectedCountry].pieData = vm.pieData;
-      ODIqueryCache[vm.selectedCountry].pieLabels = vm.pieLabels;
+      queryCache[vm.selectedFormat][vm.selectedCountry] = {};
+      queryCache[vm.selectedFormat][vm.selectedCountry].highest = vm.highest;
+      queryCache[vm.selectedFormat][vm.selectedCountry].highestGround = vm.highestGround;
+      queryCache[vm.selectedFormat][vm.selectedCountry].data = vm.data;
+      queryCache[vm.selectedFormat][vm.selectedCountry].labels = vm.labels;
+      queryCache[vm.selectedFormat][vm.selectedCountry].totalAverage = vm.totalAverage;
+      queryCache[vm.selectedFormat][vm.selectedCountry].pieData = vm.pieData;
+      queryCache[vm.selectedFormat][vm.selectedCountry].pieLabels = vm.pieLabels;
     }
+
   }
 
 
-
+  vm.showPie = true;
   vm.countries = [];
   AppSettings.sachinODIData.sort(function(a, b) {
+    return a.ground.localeCompare(b.ground);
+  });
+  AppSettings.sachinTestData.sort(function(a, b) {
     return a.ground.localeCompare(b.ground);
   });
   AppSettings.sachinODIData.reduce(function(prev, curr) {
     vm.countries.push(curr.opposition);
   });
+  vm.testCountries = [];
+  AppSettings.sachinTestData.reduce(function(prev, curr) {
+    vm.testCountries.push(curr.opposition);
+  });
+  vm.testCountries = vm.testCountries.filter(onlyUnique).sort();
   vm.countries = vm.countries.filter(onlyUnique).sort();
   vm.countries.unshift('The World');
+  vm.testCountries.unshift('The World');
   vm.selectedCountry = vm.countries[0];
   vm.data = [];
   vm.data.push([]);
@@ -135,6 +184,7 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
   vm.totalAverage = 0;
   vm.selectedFormat = 'ODIs'
   vm.updateChart();
+  //vm.json = vm.testCountries;
   //vm.updatePie();
 
 }

@@ -6,7 +6,9 @@ const AppSettings = {
   appTitle: 'Sachin Sachin!',
   apiUrl: '/api/v1',
   sachinODIData: odis,
-  sachinTestData: tests
+  sachinTestData: tests,
+  goodODIScore: 50,
+  goodTestScore: 50
 };
 
 export default AppSettings;
