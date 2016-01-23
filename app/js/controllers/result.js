@@ -1,11 +1,11 @@
-function ResultCtrl($firebaseObject, $stateParams) {
+function ResultCtrl($firebaseObject, $stateParams, AppSettings) {
   'ngInject';
   // ViewModel
   const vm = this;
   vm.choice = $stateParams.choice;
   vm.title = 'Sachin Sachin!';
   vm.number = 1234;
-  var ref = new Firebase("https://shining-heat-3130.firebaseio.com");
+  var ref = new Firebase(AppSettings.firebaseUrl);
   // download the data into a local object
   vm.allData = $firebaseObject(ref);
   vm.allData.$loaded()

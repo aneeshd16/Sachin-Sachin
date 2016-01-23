@@ -5,7 +5,7 @@ function HomeCtrl($firebaseObject, $state, AppSettings) {
 
   vm.title = 'Sachin Sachin!';
   vm.number = 1234;
-  var ref = new Firebase("https://shining-heat-3130.firebaseio.com/");
+  var ref = new Firebase(AppSettings.firebaseUrl);
   // download the data into a local object
   vm.data = $firebaseObject(ref);
   var yesCount = (ref.child('yes'));
