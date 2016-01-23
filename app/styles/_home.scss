@@ -6,3 +6,19 @@
 .top-space {
 	margin-top: 60px;
 }
+
+.blockquote {
+  font: 18px normal helvetica, sans-serif;
+  line-height: 28px;
+  float: left;
+  position: relative;
+  left: -50%;
+  padding-left: 15px;
+  border-left: 3px solid #ccc;
+} 
+
+.quote-wrap {
+	position: relative;
+	float:left;
+	left: 50%;
+}

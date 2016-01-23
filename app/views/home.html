@@ -4,7 +4,10 @@
     <button ng-click="home.btnClicked(1)" class="btn-home-page btn btn-lg btn-primary">YES</button>
     <button ng-click="home.btnClicked(0)" class="btn-home-page btn btn-lg btn-danger">NO</button>
 </div>
-<p class="row"> 
-	<div ng-if="home.data.yes>=0" class="col-xs-12 top-space center-align well"><i>Greatness is an acquisition of status by the people who have contributed to an organization, group, or purpose that is greater than themselves. It is defined by the deeds of people that make this world a better place. To provide a purpose to those who have no purpose, and to sustain it, mitigate it from damage, and praise it in any way they can, while still maintaining their own dignity and greatness.</i></div>
-
+<p  class="top-space row">
+    <h2 ng-if="home.data.yes>=0" class="heading -large center-align">What is greatness?</h2>
+    <div ng-if="home.data.yes>=0" class="quote-wrap">
+        <div class="blockquote">{{home.quote}}
+            <br>-<i>{{home.author}}</i></div>
+    </div>
 </p>

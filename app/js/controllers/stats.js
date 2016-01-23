@@ -4,16 +4,33 @@ function onlyUnique(value, index, self) {
 
 function StatsCtrl($firebaseObject, AppSettings, $filter) {
   'ngInject';
-  // ViewModel
+  //Init vars
   const vm = this;
+
+  //Used for caching queries
   var queryCache = {};
   queryCache['ODIs'] = {};
   queryCache['Tests'] = {};
+
+  vm.data = [];
+  vm.data.push([]);
+  vm.labels = [];
+  vm.pieData = [];
+  vm.pieLabels = [];
+  vm.totalAverage = 0;
+  vm.selectedFormat = 'ODIs'
+  
   vm.showStats = true;
+  vm.showPie = true;
   /*Update the batting averages chart*/
   vm.updateChart = function() {
     var searchSpace;
     vm.showStats = true;
+    vm.data = [];
+    vm.data.push([]);
+    vm.labels = [];
+
+    //Hide Stats if select country does not play tests
     if (vm.selectedFormat === 'Tests') {
       if (vm.testCountries.indexOf(vm.selectedCountry) == -1) {
         vm.showStats = false;
@@ -21,16 +38,16 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
       }
     }
 
-    vm.goodScore = (vm.selectedFormat === 'ODIs' ? AppSettings.goodODIScore : AppSettings.goodTestScore);
+    //select data store from selected format
     if (vm.selectedFormat === 'ODIs') {
       searchSpace = AppSettings.sachinODIData;
+      vm.goodScore = AppSettings.goodODIScore;
     } else {
       searchSpace = AppSettings.sachinTestData;
+      vm.goodScore = AppSettings.goodTestScore;
     }
-    vm.data = [];
-    vm.data.push([]);
-    vm.labels = [];
-
+    
+    //check cache if query has been done previously
     if (vm.selectedCountry in queryCache[vm.selectedFormat]) {
       //load from cache
       for (var prop in queryCache[vm.selectedFormat][vm.selectedCountry]) {
@@ -39,13 +56,14 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
         }
       }
     } else {
-      var winningQuery;
+      //make new query
+      var matchesIndiaWon;
       if (vm.selectedCountry === 'The World') {
-        var winningQuery = $filter('filter')(searchSpace, {
+        var matchesIndiaWon = $filter('filter')(searchSpace, {
           match_result: 'won'
         });
       } else {
-        var winningQuery = $filter('filter')(searchSpace, {
+        var matchesIndiaWon = $filter('filter')(searchSpace, {
           match_result: 'won',
           opposition: vm.selectedCountry
         });
@@ -59,22 +77,26 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
       var curr;
       var highest = -1;
       var highestGround;
-      for (curr in winningQuery) {
-        if (clean(winningQuery[curr].batting_score) >= 0) {
-          if (!(winningQuery[curr].ground in winningGrounds)) {
-            winningGrounds[winningQuery[curr].ground] = {};
-            winningGrounds[winningQuery[curr].ground]['average'] = clean(winningQuery[curr].batting_score);
-            winningGrounds[winningQuery[curr].ground]['matches'] = 1;
+      for (curr in matchesIndiaWon) {
+        var score = matchesIndiaWon[curr].batting_score;
+        var ground = matchesIndiaWon[curr].ground;
+        if (clean(score) >= 0) {
+          if (!(ground in winningGrounds)) {
+            winningGrounds[ground] = {};
+            winningGrounds[ground]['average'] = clean(score);
+            winningGrounds[ground]['matches'] = 1;
           } else {
-            winningGrounds[winningQuery[curr].ground]['average'] = ((winningGrounds[winningQuery[curr].ground]['average'] * winningGrounds[winningQuery[curr].ground]['matches']) + clean(winningQuery[curr].batting_score))
-            if (winningQuery[curr].batting_score[winningQuery[curr].batting_score.length - 1] != '*') {
-              (++winningGrounds[winningQuery[curr].ground]['matches']);
+            //calculate cumulative average
+            winningGrounds[ground]['average'] = ((winningGrounds[ground]['average'] * winningGrounds[ground]['matches']) + clean(score))
+            if (score[score.length - 1] != '*') {
+              //if not out, do not increment denominator
+              (++winningGrounds[ground]['matches']);
             }
-            winningGrounds[winningQuery[curr].ground]['average'] /= winningGrounds[winningQuery[curr].ground]['matches'];
+            winningGrounds[ground]['average'] /= winningGrounds[ground]['matches'];
           }
-          if (highest < clean(winningQuery[curr].batting_score)) {
-            highest = clean(winningQuery[curr].batting_score);
-            highestGround = winningQuery[curr].ground;
+          if (highest < clean(score)) {
+            highest = clean(score);
+            highestGround = ground;
           }
         }
       }
@@ -84,6 +106,7 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
       var labels = [];
       var totalAverage = 0;
 
+      //Populate bar chart data
       for (var ground in winningGrounds) {
         if (winningGrounds.hasOwnProperty(ground)) {
           vm.data[0].push(winningGrounds[ground].average);
@@ -96,40 +119,40 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
         }
       }
 
+      //Calculate total average and highest
       var divider = labels.length;
       if (vm.selectedFormat === 'Tests')
         divider *= 2;
       vm.totalAverage = totalAverage / divider;
       vm.labels = labels;
 
-      var losingQuery;
+      var matchesSachinScoredGood;
 
       if (vm.selectedCountry === 'The World') {
-        losingQuery = $filter('filter')(searchSpace, function(element) {
+        matchesSachinScoredGood = $filter('filter')(searchSpace, function(element) {
           if ((element.batting_score >= vm.goodScore))
             return true;
         });
       } else {
-        losingQuery = $filter('filter')(searchSpace, function(element) {
-          if ((element.batting_score >= vm.goodScore) && (element.opposition === vm.selectedCountry)){
+        matchesSachinScoredGood = $filter('filter')(searchSpace, function(element) {
+          if ((element.batting_score >= vm.goodScore) && (element.opposition === vm.selectedCountry)) {
             return true;
           }
         });
       }
-      if (losingQuery.length <= 1) {
+      if (matchesSachinScoredGood.length <= 1) {
         console.log("dgfbh");
         vm.pieData = [];
         vm.pieLabels = [];
         vm.showPie = false;
         return null;
-      }
-      else {
+      } else {
         vm.showPie = true;
         vm.pieLabels = ['WON', 'LOST'];
         vm.pieData = [];
         var winCount = 0,
           loseCount = 0;
-        losingQuery.reduce(function(prev, curr) {
+        matchesSachinScoredGood.reduce(function(prev, curr) {
           if (curr.match_result === 'won')
             winCount++;
           else if (curr.match_result === 'lost')
@@ -138,9 +161,6 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
 
         vm.pieData = [winCount, loseCount];
       }
-      
-
-      vm.json = winningQuery;
 
       //add data to cache
       queryCache[vm.selectedFormat][vm.selectedCountry] = {};
@@ -155,19 +175,21 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
 
   }
 
-
-  vm.showPie = true;
-  vm.countries = [];
+  //Sort data by ground name
   AppSettings.sachinODIData.sort(function(a, b) {
     return a.ground.localeCompare(b.ground);
   });
   AppSettings.sachinTestData.sort(function(a, b) {
     return a.ground.localeCompare(b.ground);
   });
+
+  //Get a list of all countries
+  vm.testCountries = [];
+  vm.countries = [];
   AppSettings.sachinODIData.reduce(function(prev, curr) {
     vm.countries.push(curr.opposition);
   });
-  vm.testCountries = [];
+  
   AppSettings.sachinTestData.reduce(function(prev, curr) {
     vm.testCountries.push(curr.opposition);
   });
@@ -176,17 +198,7 @@ function StatsCtrl($firebaseObject, AppSettings, $filter) {
   vm.countries.unshift('The World');
   vm.testCountries.unshift('The World');
   vm.selectedCountry = vm.countries[0];
-  vm.data = [];
-  vm.data.push([]);
-  vm.labels = [];
-  vm.pieData = [];
-  vm.pieLabels = [];
-  vm.totalAverage = 0;
-  vm.selectedFormat = 'ODIs'
   vm.updateChart();
-  //vm.json = vm.testCountries;
-  //vm.updatePie();
-
 }
 
 export default {

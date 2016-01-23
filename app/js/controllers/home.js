@@ -1,4 +1,4 @@
-function HomeCtrl($firebaseObject, $state) {
+function HomeCtrl($firebaseObject, $state, AppSettings) {
   'ngInject';
   // ViewModel
   const vm = this;
@@ -10,6 +10,11 @@ function HomeCtrl($firebaseObject, $state) {
   vm.data = $firebaseObject(ref);
   var yesCount = (ref.child('yes'));
   var noCount = (ref.child('no'));
+
+  var quotes = AppSettings.quotes;
+  var i = Math.floor(Math.random() * (quotes.length));
+  vm.quote = quotes[i].quote;
+  vm.author = quotes[i].author;
 
   vm.btnClicked = function(param) {
     if (param === 1) {

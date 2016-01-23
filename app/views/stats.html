@@ -3,7 +3,7 @@
         <img class="sachin-image center-align" src="images/sachin.png"><span>VS&nbsp;&nbsp;&nbsp;</span>
         <select class="form-control dropdown" name="repeatSelect" id="repeatSelect" ng-model="stats.selectedCountry" ng-change="stats.updateChart()">
             <option ng-repeat="country in stats.countries track by country" value="{{country}}">{{country}}</option>
-        </select><span>&nbsp;&nbsp;&nbsp;in&nbsp;&nbsp;&nbsp;</span>
+        </select><span class="side-margins">in</span>
         <select class="form-control dropdown" name="repeatSelect2" id="repeatSelect2" ng-model="stats.selectedFormat" ng-change="stats.updateChart()">
             <option value="ODIs">ODIs</option>
             <option value="Tests">Tests</option>
@@ -51,8 +51,8 @@
             <p class="heading-medium ">Number of matches in which Sachin scored more than {{ stats.goodScore }}</p>
         </div>
     </div>
-</div>
-<div class="row center-align">
-    <h2 class="heading -medium">Sachin's average is high when India wins. Conversely, India wins more often if Sachins makes a high score.</h2>
-    <div class="heading -large">Thus proved.</div>
+    <div class="row center-align">
+        <h2 class="heading -medium">Sachin's average is high when India wins. Conversely, India wins more often if Sachins makes a high score.</h2>
+        <div class="heading -large">Thus proved.</div>
+    </div> 
 </div>
